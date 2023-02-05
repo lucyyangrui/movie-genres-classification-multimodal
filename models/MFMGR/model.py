@@ -15,6 +15,7 @@ from swin.swin import swin_small
 class MFMGP(nn.Module):
     def __init__(self, args):
         super().__init__()
+        self.modals = args.modals
         self.device = args.device
         self.cls_weight = args.cls_weight
         self.bert_cfg = BertConfig.from_pretrained(args.bert_dir)
@@ -74,18 +75,29 @@ class MFMGP(nn.Module):
         return loss, accuracy, pred_label_id
 
     def forward(self, data, get_node_feat=False):
-        text_input = data['text_input']  # [bs, seq_len]
-        text_mask = data['text_mask']  # [bs, seq_len]
-        frame_input = data['frame_input']  # [bs, 32, 3, 224, 224]
-        frame_mask = data['frame_mask']  # [bs, 32]
-        audio_feature = data['audio_wav_feat']  # [bs, n, 1024]
-        audio_mask = data['audio_mask']
+        inputs = {}
+        inputs_mask = {}
+        if 'summary' in self.modals:
+            text_input = data['text_input']  # [bs, seq_len]
+            text_mask = data['text_mask']  # [bs, seq_len]
+            inputs['text_input'] = text_input
+            inputs_mask['text_mask'] = text_mask
 
-        visual_feature = self.encoder_frames(frame_input)  # [bs, 32, 768]
+        if 'video' in self.modals:
+            frame_input = data['frame_input']  # [bs, 32, 3, 224, 224]
+            frame_mask = data['frame_mask']  # [bs, 32]
+            visual_feature = self.encoder_frames(frame_input)  # [bs, 32, 768]
+            inputs['visual_feature'] = visual_feature
+            inputs_mask['visual_mask'] = frame_mask
 
-        audio_feature = self.audio_linear(audio_feature) # [bs, n, 768]
+        if 'audio' in self.modals:
+            audio_feature = data['audio_wav_feat']  # [bs, n, 1024]
+            audio_mask = data['audio_mask']
+            audio_feature = self.audio_linear(audio_feature) # [bs, n, 768]
+            inputs['audio_feature'] = audio_feature
+            inputs_mask['audio_mask'] = audio_mask
 
-        output = self.bert(text_input, text_mask, visual_feature, frame_mask, audio_feature, audio_mask)  # [bs, seq_len + 32, 768]
+        output = self.bert(inputs, inputs_mask)  # [bs, seq_len + 32, 768]
 
         pooled_output = torch.mean(output, dim=1)  # [bs, 768]
 
@@ -119,13 +131,24 @@ class VlBertModel(BertPreTrainedModel):
         for layer, heads in heads_to_prune.items():
             self.encoder.layer[layer].attention.prune_heads(heads)
 
-    def forward(self, text_input, text_mask, visual_feature, visual_mask, audio_feature, audio_mask): # ):
-        text_input = self.embeddings(text_input)
-        visual_emb = self.embeddings(inputs_embeds=visual_feature, token_type_ids=torch.ones_like(visual_mask))
-        audio_emb = self.embeddings(inputs_embeds=audio_feature, token_type_ids=torch.ones_like(audio_mask))
+    def forward(self, inputs: dict, inputs_mask: dict): # ):
+        encoder_input = []
+        encoder_mask = []
+        if 'text_input' in inputs:
+            text_input = self.embeddings(inputs['text_input'])
+            encoder_input.append(text_input)
+            encoder_mask.append(inputs_mask['text_mask'])
+        if 'visual_feature' in inputs:
+            visual_emb = self.embeddings(inputs_embeds=inputs['visual_feature'], token_type_ids=torch.ones_like(inputs_mask['visual_mask']))
+            encoder_input.append(visual_emb)
+            encoder_mask.append(inputs_mask['visual_mask'])
+        if 'audio_feature' in inputs:
+            audio_emb = self.embeddings(inputs_embeds=inputs['audio_feature'], token_type_ids=torch.ones_like(inputs_mask['audio_mask']))
+            encoder_input.append(audio_emb)
+            encoder_mask.append(inputs_mask['audio_mask'])
 
-        embeddings = torch.cat([text_input, visual_emb, audio_emb], dim=1) # 
-        mask = torch.cat([text_mask, visual_mask, audio_mask], dim=1) # 
+        embeddings = torch.cat(encoder_input, dim=1) # 
+        mask = torch.cat(encoder_mask, dim=1) # 
         # embeddings = text_input
         # mask = text_mask
         mask = mask[:, None, None, :]
