@@ -1,4 +1,4 @@
-# Multi-modal Fusion model for Movie Genre Classification (MFMGC)
+# Multi-modal data Fusion Framework for Movie Genre Classification (MFMGC)
 
 This repository contains the source code of MFMGC and the way of obtaining the dataset MovieBricks.
 
