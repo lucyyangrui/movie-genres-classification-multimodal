@@ -19,7 +19,7 @@ def setup_seed(args):
 
 
 def setup_logging(key_word: str = 'test'):
-    log_f_name = './log/paper/ablation/' + f"{key_word}_{time.strftime('%m%d', time.localtime())}.log"  # %m%d_%H%M
+    log_f_name = './log/' + f"{key_word}_{time.strftime('%m%d', time.localtime())}.log"  # %m%d_%H%M
 
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',

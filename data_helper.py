@@ -114,12 +114,13 @@ class MultiModalDataset(Dataset):
         self.pic_video_path = args.pic_video_path
         with open(args.annotation, 'r', encoding='utf-8') as f:
             self.anns = json.load(f)
+        
+        if 'audio' in args.modals:
+            with open(self.audio_wav2vec_path, 'r', encoding='utf-8') as f:
+                self.audio_feat_dict = json.load(f)
             
-        with open(self.audio_wav2vec_path, 'r', encoding='utf-8') as f:
-            self.audio_feat_dict = json.load(f)
-            
-        with open(args.base1_audio_sus, 'r', encoding='utf-8') as f:
-            self.base1_audio_sus = json.load(f)
+        # with open(args.base1_audio_sus, 'r', encoding='utf-8') as f:
+        #     self.base1_audio_sus = json.load(f)
             
         self.audio_part_num = args.audio_part_num
 
@@ -129,12 +130,13 @@ class MultiModalDataset(Dataset):
             return float(x)
 
         self.word_vec_dict = {}
-        with open(args.word2vec_path, 'rb') as f:
-            for i, line_b in enumerate(f):
-                line_u = line_b.decode('utf-8')
-                if i >= 1:
-                    word_vec = line_u.strip('\n ').split(' ')
-                    self.word_vec_dict[word_vec[0]] = list(map(str_to_float, word_vec[1:]))
+        if args.model_name != 'mymodel':
+            with open(args.word2vec_path, 'rb') as f:
+                for i, line_b in enumerate(f):
+                    line_u = line_b.decode('utf-8')
+                    if i >= 1:
+                        word_vec = line_u.strip('\n ').split(' ')
+                        self.word_vec_dict[word_vec[0]] = list(map(str_to_float, word_vec[1:]))
 
         self.tokenizer = BertTokenizer.from_pretrained(args.bert_dir, use_fast=True, cache_dir=args.bert_cache)
 

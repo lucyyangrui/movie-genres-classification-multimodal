@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument("--adam_epsilon", default=1e-8, type=float, help="Epsilon for Adam optimizer.")
     parser.add_argument('--warmup_steps', type=int, default=200)
     parser.add_argument('--max_steps', type=int, default=2000)
-    parser.add_argument('--model_save_path', type=str, default='./models/CCT_MMC_base1/save/paper/')
+    parser.add_argument('--model_save_path', type=str, default='./models/MFMGC/save/')
     parser.add_argument('--note', type=str, default='mymodel')
 
     # ========================= text Configs ==========================

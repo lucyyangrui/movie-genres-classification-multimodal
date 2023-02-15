@@ -1,0 +1,4 @@
+/__pycache__
+models/MFMGC/__pycache__
+models/cache/bert/*
+models/cache/resnet152/*

@@ -7,10 +7,10 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 from config import parse_args
 from data_helper import create_dataloader
-from models.CCT_MMC_base1.model import Base1CttMmc
-from models.MFMGR.model import MFMGP
-from models.GMU_base2.model import GMU_MGC
-from models.moviescope_base3.model import Base3Moviescope
+# from models.CCT_MMC_base1.model import Base1CttMmc
+# from models.GMU_base2.model import GMU_MGC
+# from models.moviescope_base3.model import Base3Moviescope
+from models.MFMGC.model import MFMGP
 
 
 def validation(model, val_dataloader, print_raw_value=False):
@@ -49,17 +49,20 @@ def validation(model, val_dataloader, print_raw_value=False):
 def test_model(args, test_dataloader):
     logging.info('>>> loading model...')
     if args.model_name == 'base1':
-        model = Base1CttMmc(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = Base1CttMmc(args)
+        # optimizer, schedual = build_optimizer(args, model)
     elif args.model_name == 'mymodel':
         model = MFMGP(args)
         optimizer, schedual = build_optimizer_vlbert(args, model)
     elif args.model_name == 'base2':
-        model = GMU_MGC(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = GMU_MGC(args)
+        # optimizer, schedual = build_optimizer(args, model)
     elif args.model_name == 'base3':
-        model = Base3Moviescope(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = Base3Moviescope(args)
+        # optimizer, schedual = build_optimizer(args, model)
     
     model_dict = torch.load(args.model_save_path + args.save_model_name, map_location='cpu')
     model.load_state_dict(model_dict['model_state_dict'])
@@ -77,17 +80,20 @@ def train_and_validation(args):
     # TODO 考虑一下多标签的怎么做样本划分
     train_dataloader, val_dataloader, test_dataloader = create_dataloader(args)
     if args.model_name == 'base1':
-        model = Base1CttMmc(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = Base1CttMmc(args)
+        # optimizer, schedual = build_optimizer(args, model)
     elif args.model_name == 'mymodel':
         model = MFMGP(args)
         optimizer, schedual = build_optimizer_vlbert(args, model)
     elif args.model_name == 'base2':
-        model = GMU_MGC(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = GMU_MGC(args)
+        # optimizer, schedual = build_optimizer(args, model)
     elif args.model_name == 'base3':
-        model = Base3Moviescope(args)
-        optimizer, schedual = build_optimizer(args, model)
+        pass
+        # model = Base3Moviescope(args)
+        # optimizer, schedual = build_optimizer(args, model)
     
     # model_dict = torch.load('./models/CCT_MMC_base1/save/model.bin', map_location='cpu')
     # model.load_state_dict(model_dict['model_state_dict'])  
